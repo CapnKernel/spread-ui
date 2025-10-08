@@ -22,14 +22,6 @@ document.addEventListener('DOMContentLoaded', function() {
         setFocus(this);
       }
     });
-
-    // Handle Enter key to start editing
-    cell.addEventListener('keydown', function(e) {
-      if (e.key === 'Enter' && !isEditing) {
-        e.preventDefault();
-        startEditing(this);
-      }
-    });
   });
 
   // Global keyboard navigation
@@ -43,6 +35,13 @@ document.addEventListener('DOMContentLoaded', function() {
     const dataCells = Array.from(row.querySelectorAll('.data-cell'));
     const cellIndex = dataCells.indexOf(currentCell);
     const rowIndex = Array.from(row.parentNode.children).indexOf(row);
+
+    // Start editing on any printable character (append mode)
+    if (e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
+      e.preventDefault();
+      startEditing(currentCell, 'append', e.key);
+      return;
+    }
 
     switch(e.key) {
       case 'ArrowUp':
@@ -58,17 +57,37 @@ document.addEventListener('DOMContentLoaded', function() {
         navigateToCell(rowIndex, cellIndex - 1);
         break;
       case 'ArrowRight':
-      case 'Tab':
         e.preventDefault();
         navigateToCell(rowIndex, cellIndex + 1);
         break;
+      case 'Tab':
+        e.preventDefault();
+        console.log('Global Tab navigation:', {
+          currentCell: cellIndex,
+          currentRow: rowIndex,
+          shiftKey: e.shiftKey
+        });
+        if (e.shiftKey) {
+          // Shift-Tab: move left
+          navigateToCell(rowIndex, cellIndex - 1);
+        } else {
+          // Tab: move right
+          navigateToCell(rowIndex, cellIndex + 1);
+        }
+        break;
       case 'Enter':
         e.preventDefault();
-        startEditing(currentCell);
+        if (e.shiftKey) {
+          // Shift-Enter: move up
+          navigateToCell(rowIndex - 1, cellIndex);
+        } else {
+          // Enter: start editing with selection
+          startEditing(currentCell, 'select');
+        }
         break;
-      case ' ':
+      case 'F2':
         e.preventDefault();
-        startEditing(currentCell);
+        startEditing(currentCell, 'end');
         break;
     }
   });
@@ -101,7 +120,7 @@ document.addEventListener('DOMContentLoaded', function() {
     currentCell.focus();
   }
 
-  function startEditing(cell) {
+  function startEditing(cell, mode = 'select', character = '') {
     if (isEditing) return;
 
     isEditing = true;
@@ -113,7 +132,14 @@ document.addEventListener('DOMContentLoaded', function() {
     // Create input element with CSS class
     const input = document.createElement('input');
     input.type = 'text';
-    input.value = originalContent;
+
+    // Set initial value based on mode
+    if (mode === 'append' && character) {
+      input.value = originalContent + character; // Append character
+    } else {
+      input.value = originalContent; // Preserve existing content
+    }
+
     input.className = 'cell-input';
 
     // Clear cell content and add input
@@ -121,28 +147,67 @@ document.addEventListener('DOMContentLoaded', function() {
     contentSpan.style.display = 'none';
     cell.appendChild(input);
     input.focus();
-    input.select();
+
+    // Set cursor position based on mode
+    if (mode === 'select') {
+      input.select(); // Select all text for replacement
+    } else if (mode === 'end' || mode === 'append') {
+      input.setSelectionRange(input.value.length, input.value.length); // Cursor at end
+    }
 
     // Handle input events
-    input.addEventListener('blur', function() {
+    const blurHandler = function() {
       finishEditing(cell, input.value);
-    });
+    };
+    input.addEventListener('blur', blurHandler);
 
     input.addEventListener('keydown', function(e) {
-      if (e.key === 'Enter') {
+      if (e.key === 'Enter' || e.key === 'Tab') {
         e.preventDefault();
-        finishEditing(cell, input.value);
+        e.stopPropagation(); // Stop event from bubbling to global navigation
+        const newValue = input.value;
+
+        // Get current cell position before finishing edit
+        const row = cell.parentNode;
+        const dataCells = Array.from(row.querySelectorAll('.data-cell'));
+        const cellIndex = dataCells.indexOf(cell);
+        const rowIndex = Array.from(row.parentNode.children).indexOf(row);
+
+        // Navigate based on key and modifiers
+        let targetRow = rowIndex;
+        let targetCell = cellIndex;
+
+        if (e.key === 'Enter') {
+          if (e.shiftKey) {
+            targetRow = rowIndex - 1; // Shift-Enter: up
+          } else {
+            targetRow = rowIndex + 1; // Enter: down
+          }
+        } else if (e.key === 'Tab') {
+          if (e.shiftKey) {
+            targetCell = cellIndex - 1; // Shift-Tab: left
+          } else {
+            targetCell = cellIndex + 1; // Tab: right
+          }
+        }
+
+        // Remove blur listener to prevent duplicate finishEditing calls
+        input.removeEventListener('blur', blurHandler);
+        finishEditing(cell, newValue);
+        navigateToCell(targetRow, targetCell);
       } else if (e.key === 'Escape') {
         e.preventDefault();
+        e.stopPropagation(); // Stop event from bubbling to global navigation
+        // Remove blur listener to prevent duplicate finishEditing calls
+        input.removeEventListener('blur', blurHandler);
         finishEditing(cell, originalContent);
       }
     });
   }
-
   function finishEditing(cell, newValue) {
     // Remove input and restore cell content
     const input = cell.querySelector('input');
-    if (input) {
+    if (input && input.parentNode === cell) {
       input.remove();
     }
 
@@ -151,12 +216,9 @@ document.addEventListener('DOMContentLoaded', function() {
     contentSpan.textContent = newValue || '';
     contentSpan.style.display = '';
 
-    // Remove editing class and restore focus
+    // Remove editing class
     cell.classList.remove('editing');
     isEditing = false;
-
-    // Re-focus the cell
-    setFocus(cell);
 
     // Add visual feedback for edited cell
     cell.classList.add('cell-edited');
@@ -251,4 +313,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // Initialize column z-index layering
   initColumnZIndex();
+
+  // Initialize column resizing
+  initColumnResizing();
 });

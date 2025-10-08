@@ -1,6 +1,6 @@
 /* Spreadsheet Styles with Bootstrap 5 */
 .spreadsheet-container {
-  overflow: auto;
+  overflow: hidden;
   max-width: 100%;
 }
 
@@ -64,7 +64,6 @@
   vertical-align: middle;
   cursor: pointer;
   box-sizing: border-box;
-  overflow: hidden; /* Contain vertical overflow */
   position: relative;
 }
 
@@ -93,15 +92,6 @@
 
 .spreadsheet-table tbody tr:nth-child(odd) {
   background-color: white;
-}
-
-/* Ensure cells can overlay each other properly */
-.spreadsheet-table tbody tr {
-  position: relative;
-}
-
-.spreadsheet-table tbody td {
-  position: relative;
 }
 
 /* Grid lines for spreadsheet appearance */
@@ -181,7 +171,7 @@ body.resizing {
   z-index: 15;
 }
 
-/* Allow cell content to overflow into adjacent cells horizontally only */
+/* Cell content with overflow - z-index set dynamically by JavaScript */
 .data-cell .cell-content {
   position: absolute;
   top: 0;
@@ -189,13 +179,9 @@ body.resizing {
   padding: 0.5rem 0.75rem;
   overflow: visible;
   white-space: nowrap;
-  z-index: 5;
   background-color: inherit;
   height: 100%;
   box-sizing: border-box;
-  /* Allow horizontal overflow but contain vertically */
-  max-height: 100%;
-  overflow-y: hidden;
 }
 
 /* Edited cell visual feedback */
@@ -216,7 +202,7 @@ body.resizing {
     font-size: 0.75rem;
     min-width: 400px;
   }
-  
+
   .header-cell,
   .row-header,
   .data-cell {
@@ -224,7 +210,7 @@ body.resizing {
     min-width: 80px;
     height: 35px;
   }
-  
+
   .cell-input {
     padding: 0.375rem 0.5rem;
   }
