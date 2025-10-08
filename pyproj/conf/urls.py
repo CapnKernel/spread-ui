@@ -36,5 +36,6 @@ urlpatterns = [
             "document_root": settings.MEDIA_ROOT,
         },
     ),
+    path("", include("spreadui.urls")),
     path("__debug__/", include("debug_toolbar.urls")),
 ]
