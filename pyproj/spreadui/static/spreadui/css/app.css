@@ -1,0 +1,124 @@
+/* Spreadsheet Styles */
+.spreadsheet-container {
+  margin: 20px;
+  overflow: auto;
+  max-width: 100%;
+}
+
+.spreadsheet-table {
+  border-collapse: collapse;
+  border: 2px solid #1a73e8;
+  font-family: Arial, sans-serif;
+  font-size: 14px;
+  min-width: 600px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Header cells (column letters and row numbers) */
+.header-cell {
+  background-color: #f8f9fa;
+  border: 1px solid #dadce0;
+  padding: 8px 12px;
+  text-align: center;
+  font-weight: bold;
+  color: #5f6368;
+  min-width: 60px;
+  height: 40px;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.row-header {
+  background-color: #f8f9fa;
+  border: 1px solid #dadce0;
+  padding: 8px 12px;
+  text-align: center;
+  font-weight: bold;
+  color: #5f6368;
+  min-width: 40px;
+  position: sticky;
+  left: 0;
+  z-index: 5;
+}
+
+/* Corner cell (empty cell above row headers) */
+.spreadsheet-table thead tr th:first-child {
+  background-color: #e8f0fe;
+  border: 1px solid #dadce0;
+  position: sticky;
+  top: 0;
+  left: 0;
+  z-index: 15;
+}
+
+/* Data cells */
+.data-cell {
+  border: 1px solid #dadce0;
+  padding: 8px 12px;
+  min-width: 120px;
+  height: 40px;
+  background-color: white;
+  color: #202124;
+  vertical-align: middle;
+}
+
+/* Hover effects for better visual feedback */
+.data-cell:hover {
+  background-color: #f8f9fa;
+}
+
+.header-cell:hover,
+.row-header:hover {
+  background-color: #e8f0fe;
+}
+
+/* Table header row styling */
+.spreadsheet-table thead {
+  background-color: #f8f9fa;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+/* Table body row styling */
+.spreadsheet-table tbody tr:nth-child(even) {
+  background-color: #fafafa;
+}
+
+.spreadsheet-table tbody tr:nth-child(odd) {
+  background-color: white;
+}
+
+/* Grid lines for spreadsheet appearance */
+.spreadsheet-table th,
+.spreadsheet-table td {
+  border: 1px solid #dadce0;
+}
+
+/* Selection-like appearance for active cells (read-only visual feedback) */
+.data-cell:focus {
+  outline: 2px solid #1a73e8;
+  outline-offset: -2px;
+  background-color: #e8f0fe;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .spreadsheet-container {
+    margin: 10px;
+  }
+  
+  .spreadsheet-table {
+    font-size: 12px;
+    min-width: 400px;
+  }
+  
+  .header-cell,
+  .row-header,
+  .data-cell {
+    padding: 6px 8px;
+    min-width: 80px;
+    height: 35px;
+  }
+}

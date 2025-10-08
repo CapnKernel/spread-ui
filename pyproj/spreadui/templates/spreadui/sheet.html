@@ -1,6 +1,63 @@
 {% extends "spreadui/base.html" %}
-{% block title %}Spreadsheet Demo{% endblock %}
+{% block title %}Spreadsheet Demo{% endblock title %}
 
 {% block content %}
-<p>Hello world!
-{% endblock %}
+<div class="spreadsheet-container">
+  <h1>Spreadsheet Demo</h1>
+
+  <table class="spreadsheet-table">
+    <thead>
+      <tr>
+        <th class="header-cell"></th>
+        <th class="header-cell">A</th>
+        <th class="header-cell">B</th>
+        <th class="header-cell">C</th>
+        <th class="header-cell">D</th>
+        <th class="header-cell">E</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="row-header">1</td>
+        <td class="data-cell">Data A1</td>
+        <td class="data-cell">Data B1</td>
+        <td class="data-cell">Data C1</td>
+        <td class="data-cell">Data D1</td>
+        <td class="data-cell">Data E1</td>
+      </tr>
+      <tr>
+        <td class="row-header">2</td>
+        <td class="data-cell">Data A2</td>
+        <td class="data-cell">Data B2</td>
+        <td class="data-cell">Data C2</td>
+        <td class="data-cell">Data D2</td>
+        <td class="data-cell">Data E2</td>
+      </tr>
+      <tr>
+        <td class="row-header">3</td>
+        <td class="data-cell">Data A3</td>
+        <td class="data-cell">Data B3</td>
+        <td class="data-cell">Data C3</td>
+        <td class="data-cell">Data D3</td>
+        <td class="data-cell">Data E3</td>
+      </tr>
+      <tr>
+        <td class="row-header">4</td>
+        <td class="data-cell">Data A4</td>
+        <td class="data-cell">Data B4</td>
+        <td class="data-cell">Data C4</td>
+        <td class="data-cell">Data D4</td>
+        <td class="data-cell">Data E4</td>
+      </tr>
+      <tr>
+        <td class="row-header">5</td>
+        <td class="data-cell">Data A5</td>
+        <td class="data-cell">Data B5</td>
+        <td class="data-cell">Data C5</td>
+        <td class="data-cell">Data D5</td>
+        <td class="data-cell">Data E5</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+{% endblock content %}
