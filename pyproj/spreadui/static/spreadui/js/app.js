@@ -168,6 +168,31 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log('Cell updated:', newValue);
   }
 
+  function initColumnZIndex() {
+    const table = document.querySelector('.spreadsheet-table');
+    const rows = table.querySelectorAll('tbody tr');
+
+    if (rows.length === 0) return;
+
+    // Get the number of data columns (excluding row headers)
+    const firstRow = rows[0];
+    const dataCells = firstRow.querySelectorAll('.data-cell');
+    const columnCount = dataCells.length;
+
+    // Set z-index for each column (left columns overlay right columns)
+    rows.forEach(row => {
+      const cells = row.querySelectorAll('.data-cell');
+      cells.forEach((cell, index) => {
+        const contentSpan = cell.querySelector('.cell-content');
+        if (contentSpan) {
+          // Left columns get higher z-index values
+          const zIndex = columnCount - index;
+          contentSpan.style.zIndex = zIndex;
+        }
+      });
+    });
+  }
+
   function initColumnResizing() {
     const table = document.querySelector('.spreadsheet-table');
     const headers = table.querySelectorAll('thead th');
@@ -223,4 +248,7 @@ document.addEventListener('DOMContentLoaded', function() {
     document.addEventListener('mouseup', stopResize);
     document.body.classList.add('resizing');
   }
+
+  // Initialize column z-index layering
+  initColumnZIndex();
 });
