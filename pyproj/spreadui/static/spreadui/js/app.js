@@ -213,6 +213,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Show content span and update value
     const contentSpan = cell.querySelector('.cell-content');
+    const originalValue = contentSpan.textContent;
     contentSpan.textContent = newValue || '';
     contentSpan.style.display = '';
 
@@ -220,11 +221,13 @@ document.addEventListener('DOMContentLoaded', function() {
     cell.classList.remove('editing');
     isEditing = false;
 
-    // Add visual feedback for edited cell
-    cell.classList.add('cell-edited');
-    setTimeout(() => {
-      cell.classList.remove('cell-edited');
-    }, 1000);
+    // Add visual feedback only if cell content changed
+    if (newValue !== originalValue) {
+      cell.classList.add('cell-edited');
+      setTimeout(() => {
+        cell.classList.remove('cell-edited');
+      }, 1000);
+    }
 
     // TODO: Replace with HTMX call to server for persistence
     console.log('Cell updated:', newValue);
