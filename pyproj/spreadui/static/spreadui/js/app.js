@@ -23,6 +23,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
     const originalContent = cell.textContent;
 
+    // Add editing class for positioning
+    cell.classList.add('editing');
+
     // Create input element with CSS class
     const input = document.createElement('input');
     input.type = 'text';
@@ -58,6 +61,9 @@ document.addEventListener('DOMContentLoaded', function() {
       input.remove();
     }
     cell.textContent = newValue || '';
+
+    // Remove editing class
+    cell.classList.remove('editing');
 
     // Add visual feedback for edited cell
     cell.classList.add('cell-edited');
