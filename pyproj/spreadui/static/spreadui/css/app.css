@@ -55,7 +55,7 @@
 /* Data cells */
 .data-cell {
   border: 1px solid #dee2e6;
-  padding: 0.5rem 0.75rem;
+  padding: 0;
   width: 120px; /* Fixed initial width matching headers */
   min-width: 50px;
   height: 40px;
@@ -64,6 +64,8 @@
   vertical-align: middle;
   cursor: pointer;
   box-sizing: border-box;
+  overflow: hidden; /* Contain vertical overflow */
+  position: relative;
 }
 
 /* Hover effects for better visual feedback */
@@ -91,6 +93,15 @@
 
 .spreadsheet-table tbody tr:nth-child(odd) {
   background-color: white;
+}
+
+/* Ensure cells can overlay each other properly */
+.spreadsheet-table tbody tr {
+  position: relative;
+}
+
+.spreadsheet-table tbody td {
+  position: relative;
 }
 
 /* Grid lines for spreadsheet appearance */
@@ -139,7 +150,7 @@ body.resizing {
   background: transparent;
   box-sizing: border-box;
   min-width: 100%;
-  max-width: 300%; /* Allow expansion up to 3x cell width */
+  max-width: none; /* Allow expansion to table edge */
   overflow-x: auto;
   white-space: nowrap;
   z-index: 20;
@@ -156,6 +167,23 @@ body.resizing {
   position: relative;
   overflow: visible;
   z-index: 15;
+}
+
+/* Allow cell content to overflow into adjacent cells horizontally only */
+.data-cell .cell-content {
+  position: absolute;
+  top: 0;
+  left: 0;
+  padding: 0.5rem 0.75rem;
+  overflow: visible;
+  white-space: nowrap;
+  z-index: 5;
+  background-color: inherit;
+  height: 100%;
+  box-sizing: border-box;
+  /* Allow horizontal overflow but contain vertically */
+  max-height: 100%;
+  overflow-y: hidden;
 }
 
 /* Edited cell visual feedback */

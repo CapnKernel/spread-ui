@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Handle Enter key to make cell editable
     cell.addEventListener('keydown', function(e) {
-      if (e.key === 'Enter' || e.key === ' ') {
+      if (e.key === 'Enter') {
         e.preventDefault();
         makeCellEditable(this);
       }
@@ -63,7 +63,14 @@ document.addEventListener('DOMContentLoaded', function() {
     if (input) {
       input.remove();
     }
-    cell.textContent = newValue || '';
+    
+    // Create content span for proper overflow handling
+    const contentSpan = document.createElement('span');
+    contentSpan.className = 'cell-content';
+    contentSpan.textContent = newValue || '';
+    
+    cell.textContent = '';
+    cell.appendChild(contentSpan);
     
     // Remove editing class
     cell.classList.remove('editing');
