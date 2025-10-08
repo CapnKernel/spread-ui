@@ -19,11 +19,13 @@
   text-align: center;
   font-weight: 600;
   color: #6c757d;
-  min-width: 60px;
+  width: 120px; /* Fixed initial width */
+  min-width: 50px;
   height: 40px;
   position: sticky;
   top: 0;
   z-index: 10;
+  position: relative; /* For resize handle positioning */
 }
 
 .row-header {
@@ -33,6 +35,7 @@
   text-align: center;
   font-weight: 600;
   color: #6c757d;
+  width: 40px;
   min-width: 40px;
   position: sticky;
   left: 0;
@@ -53,12 +56,14 @@
 .data-cell {
   border: 1px solid #dee2e6;
   padding: 0.5rem 0.75rem;
-  min-width: 120px;
+  width: 120px; /* Fixed initial width matching headers */
+  min-width: 50px;
   height: 40px;
   background-color: white;
   color: #212529;
   vertical-align: middle;
   cursor: pointer;
+  box-sizing: border-box;
 }
 
 /* Hover effects for better visual feedback */
@@ -99,6 +104,27 @@
   outline: 2px solid #0d6efd;
   outline-offset: -2px;
   background-color: #e7f1ff;
+}
+
+/* Column resizing styles */
+.resize-handle {
+  position: absolute;
+  top: 0;
+  right: -3px;
+  width: 6px;
+  height: 100%;
+  cursor: col-resize;
+  z-index: 25;
+}
+
+.resize-handle:hover,
+body.resizing .resize-handle {
+  background-color: #0d6efd;
+}
+
+body.resizing {
+  cursor: col-resize;
+  user-select: none;
 }
 
 /* Cell editing styles */
