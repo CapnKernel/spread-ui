@@ -5,25 +5,27 @@
 <div class="spreadsheet-container">
   <h1>Spreadsheet Demo</h1>
 
-  <table class="spreadsheet-table">
-    <thead>
-      <tr>
-        <th class="header-cell"></th>
-        {% for col in "A" %}
-          <th class="header-cell">{{ col }}</th>
-        {% endfor %}
-      </tr>
-    </thead>
-    <tbody>
-      {% for row in "12345" %}
+  <div class="table-wrapper">
+    <table class="spreadsheet-table">
+      <thead>
         <tr>
-          <td class="row-header">{{ row }}</td>
+          <th class="header-cell"></th>
           {% for col in "A" %}
-            <td class="data-cell"><span class="cell-content">Data {{col}}{{row}}</span></td>
+            <th class="header-cell">{{ col }}</th>
           {% endfor %}
         </tr>
-      {% endfor %}
-    </tbody>
-  </table>
+      </thead>
+      <tbody>
+        {% for row in "12345" %}
+          <tr>
+            <td class="row-header">{{ row }}</td>
+            {% for col in "A" %}
+              <td class="data-cell"><span class="cell-content">Data {{col}}{{row}}</span></td>
+            {% endfor %}
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
 </div>
 {% endblock content %}

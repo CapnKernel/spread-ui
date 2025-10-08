@@ -1,7 +1,15 @@
 /* Spreadsheet Styles with Bootstrap 5 */
 .spreadsheet-container {
-  overflow: hidden;
+  overflow-x: auto;
   max-width: 100%;
+  position: relative;
+}
+
+.table-wrapper {
+  position: relative;
+  overflow: hidden;
+  display: inline-block;
+  min-width: 600px;
 }
 
 .spreadsheet-table {
