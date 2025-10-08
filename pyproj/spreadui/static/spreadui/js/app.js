@@ -1,30 +1,111 @@
-// Simple spreadsheet cell editing and column resizing functionality
+// Simple spreadsheet cell editing, navigation and column resizing functionality
 document.addEventListener('DOMContentLoaded', function() {
   const dataCells = document.querySelectorAll('.data-cell');
-  
+  let currentCell = null;
+  let isEditing = false;
+
+  // Set initial focus to first data cell
+  if (dataCells.length > 0) {
+    setFocus(dataCells[0]);
+  }
+
+  // Prevent header cells from taking focus
+  const headerCells = document.querySelectorAll('.header-cell, .row-header');
+  headerCells.forEach(header => {
+    header.setAttribute('tabindex', '-1');
+  });
+
   dataCells.forEach(cell => {
-    // Make cell editable on click
+    // Set focus on click
     cell.addEventListener('click', function() {
-      makeCellEditable(this);
+      if (!isEditing) {
+        setFocus(this);
+      }
     });
-    
-    // Handle Enter key to make cell editable
+
+    // Handle Enter key to start editing
     cell.addEventListener('keydown', function(e) {
-      if (e.key === 'Enter') {
+      if (e.key === 'Enter' && !isEditing) {
         e.preventDefault();
-        makeCellEditable(this);
+        startEditing(this);
       }
     });
   });
-  
-  // Initialize column resizing
-  initColumnResizing();
 
-  function makeCellEditable(cell) {
-    // Don't make already editing cells editable again
-    if (cell.querySelector('input')) return;
+  // Global keyboard navigation
+  document.addEventListener('keydown', function(e) {
+    if (isEditing) return; // Don't navigate while editing
 
-    const originalContent = cell.textContent;
+    if (!currentCell) return;
+
+    const row = currentCell.parentNode;
+    // Get data cell index (excluding row header)
+    const dataCells = Array.from(row.querySelectorAll('.data-cell'));
+    const cellIndex = dataCells.indexOf(currentCell);
+    const rowIndex = Array.from(row.parentNode.children).indexOf(row);
+
+    switch(e.key) {
+      case 'ArrowUp':
+        e.preventDefault();
+        navigateToCell(rowIndex - 1, cellIndex);
+        break;
+      case 'ArrowDown':
+        e.preventDefault();
+        navigateToCell(rowIndex + 1, cellIndex);
+        break;
+      case 'ArrowLeft':
+        e.preventDefault();
+        navigateToCell(rowIndex, cellIndex - 1);
+        break;
+      case 'ArrowRight':
+      case 'Tab':
+        e.preventDefault();
+        navigateToCell(rowIndex, cellIndex + 1);
+        break;
+      case 'Enter':
+        e.preventDefault();
+        startEditing(currentCell);
+        break;
+      case ' ':
+        e.preventDefault();
+        startEditing(currentCell);
+        break;
+    }
+  });
+
+  function navigateToCell(rowIndex, cellIndex) {
+    const table = document.querySelector('.spreadsheet-table tbody');
+    const rows = table.querySelectorAll('tr');
+
+    if (rowIndex >= 0 && rowIndex < rows.length) {
+      const row = rows[rowIndex];
+      const dataCells = row.querySelectorAll('.data-cell');
+
+      if (cellIndex >= 0 && cellIndex < dataCells.length) {
+        setFocus(dataCells[cellIndex]);
+      }
+    }
+  }
+
+  function setFocus(cell) {
+    // Remove focus from previous cell
+    if (currentCell) {
+      currentCell.classList.remove('focused');
+      currentCell.removeAttribute('tabindex');
+    }
+
+    // Set focus to new cell
+    currentCell = cell;
+    currentCell.classList.add('focused');
+    currentCell.setAttribute('tabindex', '0');
+    currentCell.focus();
+  }
+
+  function startEditing(cell) {
+    if (isEditing) return;
+
+    isEditing = true;
+    const originalContent = cell.querySelector('.cell-content').textContent;
 
     // Add editing class for positioning
     cell.classList.add('editing');
@@ -36,7 +117,8 @@ document.addEventListener('DOMContentLoaded', function() {
     input.className = 'cell-input';
 
     // Clear cell content and add input
-    cell.textContent = '';
+    const contentSpan = cell.querySelector('.cell-content');
+    contentSpan.style.display = 'none';
     cell.appendChild(input);
     input.focus();
     input.select();
@@ -63,43 +145,44 @@ document.addEventListener('DOMContentLoaded', function() {
     if (input) {
       input.remove();
     }
-    
-    // Create content span for proper overflow handling
-    const contentSpan = document.createElement('span');
-    contentSpan.className = 'cell-content';
+
+    // Show content span and update value
+    const contentSpan = cell.querySelector('.cell-content');
     contentSpan.textContent = newValue || '';
-    
-    cell.textContent = '';
-    cell.appendChild(contentSpan);
-    
-    // Remove editing class
+    contentSpan.style.display = '';
+
+    // Remove editing class and restore focus
     cell.classList.remove('editing');
-    
+    isEditing = false;
+
+    // Re-focus the cell
+    setFocus(cell);
+
     // Add visual feedback for edited cell
     cell.classList.add('cell-edited');
     setTimeout(() => {
       cell.classList.remove('cell-edited');
     }, 1000);
-    
+
     // TODO: Replace with HTMX call to server for persistence
     console.log('Cell updated:', newValue);
   }
-  
+
   function initColumnResizing() {
     const table = document.querySelector('.spreadsheet-table');
     const headers = table.querySelectorAll('thead th');
-    
+
     headers.forEach((header, index) => {
       // Skip the first header (row numbers)
       if (index === 0) return;
-      
+
       // Create resize handle
       const resizeHandle = document.createElement('div');
       resizeHandle.className = 'resize-handle';
-      
+
       // Insert after the header
       header.appendChild(resizeHandle);
-      
+
       // Add event listeners for resizing
       resizeHandle.addEventListener('mousedown', function(e) {
         e.preventDefault();
@@ -107,18 +190,18 @@ document.addEventListener('DOMContentLoaded', function() {
       });
     });
   }
-  
+
   function startResize(header, e) {
     const table = document.querySelector('.spreadsheet-table');
     const startX = e.clientX;
     const startWidth = header.offsetWidth;
     const columnIndex = Array.from(header.parentNode.children).indexOf(header);
-    
+
     function doResize(e) {
       const newWidth = startWidth + (e.clientX - startX);
       if (newWidth > 50) { // Minimum width
         header.style.width = newWidth + 'px';
-        
+
         // Update all cells in this column
         const rows = table.querySelectorAll('tbody tr');
         rows.forEach(row => {
@@ -129,13 +212,13 @@ document.addEventListener('DOMContentLoaded', function() {
         });
       }
     }
-    
+
     function stopResize() {
       document.removeEventListener('mousemove', doResize);
       document.removeEventListener('mouseup', stopResize);
       document.body.classList.remove('resizing');
     }
-    
+
     document.addEventListener('mousemove', doResize);
     document.addEventListener('mouseup', stopResize);
     document.body.classList.add('resizing');
