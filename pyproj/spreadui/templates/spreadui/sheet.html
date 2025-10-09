@@ -9,19 +9,21 @@
     <table class="spreadsheet-table">
       <thead>
         <tr>
-          <th class="header-cell"></th>
-          {% for col in "A" %}
-            <th class="header-cell">{{ col }}</th>
-          {% endfor %}
+          <th class="header-cell">#</th>
+          <th class="header-cell">First Name</th>
+          <th class="header-cell">Last Name</th>
+          <th class="header-cell">Email</th>
+          <th class="header-cell">Age</th>
         </tr>
       </thead>
       <tbody>
-        {% for row in "12345" %}
+        {% for person in people %}
           <tr>
-            <td class="row-header">{{ row }}</td>
-            {% for col in "A" %}
-              <td class="data-cell"><span class="cell-content">Data {{col}}{{row}}</span></td>
-            {% endfor %}
+            <td class="row-header">{{ forloop.counter }}</td>
+            <td class="data-cell"><span class="cell-content">{{ person.first_name }}</span></td>
+            <td class="data-cell"><span class="cell-content">{{ person.last_name }}</span></td>
+            <td class="data-cell"><span class="cell-content">{{ person.email }}</span></td>
+            <td class="data-cell"><span class="cell-content">{{ person.age }}</span></td>
           </tr>
         {% endfor %}
       </tbody>
