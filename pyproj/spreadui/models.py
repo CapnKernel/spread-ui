@@ -18,7 +18,7 @@ class Person(models.Model):
 
 
 class EditingSession(models.Model):
-    session_key = models.CharField(max_length=40, unique=True)  # Django session key length
+    uuid = models.CharField(max_length=36, unique=True)  # UUID length
     last_keepalive = models.DateTimeField(auto_now=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -28,4 +28,4 @@ class EditingSession(models.Model):
         return (timezone.now() - self.last_keepalive).seconds < 30  # 30 second timeout
 
     def __str__(self):
-        return f"Session {self.session_key[:8]}..."
+        return f"Session {self.uuid[:8]}..."

@@ -4,6 +4,16 @@ document.addEventListener('DOMContentLoaded', function() {
     let keepaliveInterval = null;
     let statusPollInterval = null;
     let isEditing = false;
+    let sessionUUID = null;
+
+    // Generate UUID for this browser tab
+    function generateUUID() {
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+            const r = Math.random() * 16 | 0;
+            const v = c == 'x' ? r : (r & 0x3 | 0x8);
+            return v.toString(16);
+        });
+    }
 
     // Initialize Tabulator
     function initializeTable(readOnly = true) {
@@ -73,7 +83,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(rowData)
+                body: JSON.stringify({
+                    uuid: sessionUUID,
+                    first_name: rowData.first_name,
+                    last_name: rowData.last_name,
+                    email: rowData.email,
+                    age: rowData.age
+                })
             });
 
             const result = await response.json();
@@ -91,7 +107,7 @@ document.addEventListener('DOMContentLoaded', function() {
     async function checkSessionStatus() {
         console.log('In checkSessionStatus');
         try {
-            const response = await fetch('/api/session/status');
+            const response = await fetch(`/api/session/status?uuid=${sessionUUID}`);
             const status = await response.json();
 
             updateSessionUI(status);
@@ -110,7 +126,11 @@ document.addEventListener('DOMContentLoaded', function() {
     async function startEditingSession() {
         try {
             const response = await fetch('/api/session/edit', {
-                method: 'POST'
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({uuid: sessionUUID})
             });
 
             const result = await response.json();
@@ -136,7 +156,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
         try {
             const response = await fetch('/api/session/edit', {
-                method: 'POST'
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({uuid: sessionUUID})
             });
 
             const result = await response.json();
@@ -154,7 +178,11 @@ document.addEventListener('DOMContentLoaded', function() {
     async function endEditingSession() {
         try {
             await fetch('/api/session/end', {
-                method: 'POST'
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({uuid: sessionUUID})
             });
         } catch (error) {
             console.error('Failed to end session:', error);
@@ -171,9 +199,12 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!isEditing) return;
 
         try {
-            // Just poke the server - no response processing needed
             await fetch('/api/session/keepalive', {
-                method: 'POST'
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({uuid: sessionUUID})
             });
         } catch (error) {
             console.error('Failed to send keepalive:', error);
@@ -288,6 +319,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Initialize the application
     function initializeApp() {
+        // Generate UUID for this browser tab
+        sessionUUID = generateUUID();
+        console.log('Generated session UUID:', sessionUUID);
+
         // Create UI elements
         const statusContainer = document.getElementById('connection-status');
         statusContainer.innerHTML = `

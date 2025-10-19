@@ -40,8 +40,12 @@ def list_people(request):
     return Person.objects.all()
 
 
+class SessionRequestSchema(Schema):
+    uuid: str
+
+
 @api.get("/session/status", response=SessionStatusSchema)
-def get_session_status(request):
+def get_session_status(request, uuid: str):
     # Clean up expired sessions
     cleanup_expired_sessions()
 
@@ -51,38 +55,39 @@ def get_session_status(request):
         time_remaining = 30 - (timezone.now() - active_session.last_keepalive).seconds
 
         # Check if the current request is from the active editor
-        is_current_editor = request.session.session_key == active_session.session_key
+        is_current_editor = uuid == active_session.uuid
 
         return {
             "can_edit": is_current_editor,
-            "current_editor": active_session.session_key[:8] + "...",
+            "current_editor": active_session.uuid[:8] + "...",
             "time_remaining": max(0, time_remaining),
-            "session_id": active_session.session_key if is_current_editor else None,
+            "session_id": active_session.uuid if is_current_editor else None,
         }
     else:
         return {"can_edit": True, "current_editor": None, "time_remaining": None, "session_id": None}
 
 
 @api.post("/session/keepalive")
-def keepalive_session(request):
+def keepalive_session(request, data: SessionRequestSchema):
     """Keepalive endpoint - polled regularly to detect client disappearance"""
-    # Just pokes the server - no response needed
-    return {"success": True}
+    try:
+        session = EditingSession.objects.get(uuid=data.uuid)
+        session.last_keepalive = timezone.now()
+        session.save()
+        return {"success": True}
+    except EditingSession.DoesNotExist:
+        return {"success": False, "message": "Invalid session"}
 
 
 @api.post("/session/edit")
-def edit_session(request):
+def edit_session(request, data: SessionRequestSchema):
     """Edit endpoint - called for user actions to grant/extend editing time"""
-    # Ensure session exists (Django creates session on first access)
-    if not request.session.session_key:
-        request.session.create()
-
     # Clean up expired sessions
     cleanup_expired_sessions()
 
     # Check if this user already has an active session
     try:
-        session = EditingSession.objects.get(session_key=request.session.session_key)
+        session = EditingSession.objects.get(uuid=data.uuid)
         # User is the current editor - extend editing time
         session.last_keepalive = timezone.now()
         session.save()
@@ -95,25 +100,33 @@ def edit_session(request):
             return {"success": False, "can_edit": False, "message": "Someone else is currently editing"}
         else:
             # No one is editing - create session for this user
-            session = EditingSession.objects.create(session_key=request.session.session_key)
+            session = EditingSession.objects.create(uuid=data.uuid)
             return {"success": True, "can_edit": True}
 
 
 @api.post("/session/end")
-def end_editing_session(request):
+def end_editing_session(request, data: SessionRequestSchema):
     try:
-        session = EditingSession.objects.get(session_key=request.session.session_key)
+        session = EditingSession.objects.get(uuid=data.uuid)
         session.delete()
         return {"success": True}
     except EditingSession.DoesNotExist:
         return {"success": False, "message": "Invalid session"}
 
 
+class PersonUpdateRequestSchema(Schema):
+    uuid: str
+    first_name: str
+    last_name: str
+    email: str
+    age: int
+
+
 @api.put("/people/{person_id}")
-def update_person(request, person_id: int, data: PersonUpdateSchema):
+def update_person(request, person_id: int, data: PersonUpdateRequestSchema):
     # Verify session is valid
     try:
-        session = EditingSession.objects.get(session_key=request.session.session_key)
+        session = EditingSession.objects.get(uuid=data.uuid)
         if not session.is_active():
             session.delete()
             return {"success": False, "message": "Session expired"}

@@ -11,10 +11,10 @@ class PersonAdmin(admin.ModelAdmin):
 
 @admin.register(EditingSession)
 class EditingSessionAdmin(admin.ModelAdmin):
-    list_display = ['session_key', 'last_keepalive', 'created_at', 'is_active']
+    list_display = ['uuid', 'last_keepalive', 'created_at', 'is_active']
     list_filter = ['created_at', 'last_keepalive']
-    search_fields = ['session_key']
-    readonly_fields = ['session_key', 'created_at']
+    search_fields = ['uuid']
+    readonly_fields = ['uuid', 'created_at']
 
     def is_active(self, obj):
         return obj.is_active()
