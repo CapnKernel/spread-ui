@@ -15,6 +15,57 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // Custom numeric editor that allows arrow key navigation
+    function numericEditor(cell, onRendered, success, cancel, editorParams) {
+        const editor = document.createElement("input");
+        editor.setAttribute("type", "text");
+        editor.setAttribute("inputmode", "numeric");
+        editor.style.padding = "4px";
+        editor.style.width = "100%";
+        editor.style.boxSizing = "border-box";
+        editor.value = cell.getValue();
+
+        function setValue(value) {
+            success(value);
+        }
+
+        function handleKeydown(e) {
+            // Allow arrow keys to navigate between cells - don't prevent default
+            if (e.key === "ArrowUp" || e.key === "ArrowDown" || e.key === "ArrowLeft" || e.key === "ArrowRight") {
+                // Let Tabulator handle the navigation
+                return;
+            }
+
+            // Allow numeric input and basic editing keys
+            if (!/^[0-9\b\t\n]$/.test(e.key) &&
+                !["Backspace", "Delete", "Tab", "Enter", "Escape", "Home", "End"].includes(e.key)) {
+                e.preventDefault();
+            }
+        }
+
+        function handleBlur() {
+            const value = editor.value.trim();
+            if (value === "") {
+                setValue(null);
+            } else if (/^\d+$/.test(value)) {
+                setValue(parseInt(value, 10));
+            } else {
+                cancel();
+            }
+        }
+
+        editor.addEventListener("keydown", handleKeydown);
+        editor.addEventListener("blur", handleBlur);
+
+        // Focus and select text when editor is created
+        onRendered(function() {
+            editor.focus();
+            editor.select();
+        });
+
+        return editor;
+    }
+
     // Initialize Tabulator
     function initializeTable(readOnly = true) {
         const columns = [
@@ -22,7 +73,7 @@ document.addEventListener('DOMContentLoaded', function() {
             {title: "First Name", field: "first_name", editor: readOnly ? false : "input"},
             {title: "Last Name", field: "last_name", editor: readOnly ? false : "input"},
             {title: "Email", field: "email", editor: readOnly ? false : "input"},
-            {title: "Age", field: "age", editor: readOnly ? false : "number"},
+            {title: "Age", field: "age", editor: readOnly ? false : numericEditor, validator: "integer"},
         ];
 
         if (table) {
